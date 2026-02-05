@@ -2,6 +2,8 @@
 Created on Thu Jan 29 11:00:03 2026
 
 @author: milla
+
+Calcula los campos E y H dispersados por una esfera de índice n2 y size parameter q=ka
 """
 
 import numpy as np
