@@ -1,3 +1,15 @@
+"""
+Created on Thu Feb  5 13:15:02 2026
+
+@author: millanperez
+
+Calcula ondas planas E, H en el plano XY como suma de multipolos.
+
+Calcula sus parámetros de Stokes.
+
+"""
+
+
 import numpy as np
 from scipy.special import sph_harm, spherical_jn, spherical_yn, sph_harm_y
 import matplotlib.pyplot as plt

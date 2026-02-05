@@ -3,6 +3,8 @@
 Created on Thu Jan 22 11:16:54 2026
 
 @author: milla
+
+DESACTUALIZADO, NO FUNCIONA
 """
 
 import numpy as np
