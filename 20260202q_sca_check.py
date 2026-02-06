@@ -1,7 +1,7 @@
 """
 Created on Thu Jan 29 11:00:03 2026
 
-@author: milla
+@author: millan
 
 Cálculo de eficiencia de Scattering a través del vector de Poynting.
 Comparación con las expresiones de Bohren (solo coeficientes de Mie).
