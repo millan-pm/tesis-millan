@@ -244,34 +244,33 @@ def matriz_stokes_mie(l, wl, r, theta, phi, px, py):
 
 
 #%%
-data_n=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Ag-n-JC.txt", delimiter=",")
-data_k=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Ag-k-JC.txt", delimiter=",")
+data_n=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Si-n-AS.txt", delimiter=",")
+data_k=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Si-k-AS.txt", delimiter=",")
 
-wl_start = 0.2
-wl_end = 0.8
-npoints = 100
+wl_start = 0.45
+wl_end = 0.80
+nwl = 100
 
-wl_int = np.linspace(wl_start, wl_end, npoints)
+
+wl_int = np.linspace(wl_start, wl_end, nwl)
 n1_int = np.interp(wl_int, data_n[:,0], data_n[:,1])+1j*np.interp(wl_int, data_k[:,0], data_k[:,1]) #Con pérdidas
-# n1_int = np.interp(wl_int, data_n[:,0], data_n[:,1]) #Sin pérdidas
+#n1_int = np.interp(wl_int, data_n[:,0], data_n[:,1]) #Sin pérdidas
 
 
 
 #%%
-MA = np.zeros((npoints, npoints))
-MB = np.zeros((npoints, npoints))
-MC = np.zeros((npoints, npoints))
-MD = np.zeros((npoints, npoints))
+nrad= 150
 
-MAs = np.zeros((npoints, npoints))
-MBs = np.zeros((npoints, npoints))
-MCs = np.zeros((npoints, npoints))
-MDs = np.zeros((npoints, npoints))
+MA = np.zeros((nrad, nwl))
+MB = np.zeros((nrad, nwl))
+MC = np.zeros((nrad, nwl))
+MD = np.zeros((nrad, nwl))
 
-MA_ex = np.zeros((npoints, npoints))
-MB_ex = np.zeros((npoints, npoints))
-MC_ex = np.zeros((npoints, npoints))
-MD_ex = np.zeros((npoints, npoints))
+
+MA_ex = np.zeros((nrad, nwl))
+MB_ex = np.zeros((nrad, nwl))
+MC_ex = np.zeros((nrad, nwl))
+MD_ex = np.zeros((nrad, nwl))
 
 
 
@@ -280,16 +279,14 @@ px = 1/np.sqrt(2)
 py = 1j/np.sqrt(2)
 
 n2 = 1
-radv = np.linspace(10e-9, 80e-9, npoints)
+
+radv = np.linspace(20e-9, 80e-9, nrad)
 z_imp = 376.86             # impedancia del medio
 E0 = 1.0                # amplitud del campo
 l_max = 3              # orden máximo del desarrollo
-#nr = 1               # puntos en r
-#nphi = 1             # puntos en phi
-#ntheta = 1              # Solo 1 punto en theta
 
 theta_grados = 70
-phi_grados = 17.4
+phi_grados = 10
 
 theta = theta_grados*2*np.pi/360
 phi = phi_grados*2*np.pi/360
@@ -301,7 +298,8 @@ for i, rad in enumerate(radv):
     for j, wl in enumerate(wl_int):
         n1 = n1_int[j]
         wl = wl*1e-6
-        k = 2*np.pi/wl          # número de onda
+        k0 = 2*np.pi/wl          # número de onda
+        k=n2*k0
         
         Er     = 0j
         Etheta = 0j
@@ -355,11 +353,11 @@ for i, rad in enumerate(radv):
       
         
 
-#%%
+#%% colormaps
 
 RAD, WL = np.meshgrid(radv*1e9, wl_int)
 
-title = "Calculados con expresión analítica - Plata"
+title = "Calculados con expresión analítica - Silicio"
 
 fig, axs = plt.subplots(2, 2, num=title, figsize=(16,9))
 fig.suptitle(title)
@@ -380,7 +378,7 @@ axs[1, 1].set_title(r'Im(ab*)')
 for axi in axs.flat:
     axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-title = "Calculados a través de la matriz - Plata"
+title = "Calculados a través de la matriz - Silicio sin pérdidas"
 
 fig, axs = plt.subplots(2, 2, num=title, figsize=(16,9))
 fig.suptitle(title)
@@ -401,7 +399,7 @@ axs[1, 1].set_title(r'Im(ab*)')
 for ax in axs.flat:
     ax.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-title = "Errores - Plata"
+title = "Errores - Silicio sin pérdidas"
 
 fig, axs = plt.subplots(2, 2, num=title, figsize=(16,9))
 fig.suptitle(title)
@@ -422,3 +420,152 @@ axs[1, 1].set_title(r'Im(ab*)')
 for ax in axs.flat:
     ax.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
+#%%
+
+RAD, WL = np.meshgrid(radv*1e9, wl_int)
+fs=(12,9)
+title = f"$|a_1|^2$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+
+fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig.suptitle(title)
+
+plot00=axs[0].pcolormesh(RAD, WL, MA_ex.transpose(), cmap='jet', clim=(0,1))
+plt.colorbar(plot00, ax=axs[0])
+axs[0].set_title(r'Expresión analítica')
+plot01=axs[1].pcolormesh(RAD, WL, MA.transpose(), cmap='jet', clim=(0,1))
+plt.colorbar(plot01, ax=axs[1])
+axs[1].set_title(r'Método matriz')
+plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MA.transpose()-MA_ex.transpose())/MA.max()), cmap='inferno')
+plt.colorbar(plot10, ax=axs[2])
+axs[2].set_title(r'Error relativo')
+
+
+for axi in axs.flat:
+    axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
+
+title = f"$|b_1|^2$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+
+fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig.suptitle(title)
+
+plot00=axs[0].pcolormesh(RAD, WL, MB_ex.transpose(), cmap='jet', clim=(0,1))
+plt.colorbar(plot00, ax=axs[0])
+axs[0].set_title(r'Expresión analítica')
+plot01=axs[1].pcolormesh(RAD, WL, MB.transpose(), cmap='jet', clim=(0,1))
+plt.colorbar(plot01, ax=axs[1])
+axs[1].set_title(r'Método matriz')
+plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MB.transpose()-MB_ex.transpose())/MB.max()), cmap='inferno')
+plt.colorbar(plot10, ax=axs[2])
+axs[2].set_title(r'Error relativo')
+
+
+for axi in axs.flat:
+    axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
+
+title = f"$Re(a_1b_1*)$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+
+fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig.suptitle(title)
+
+plot00=axs[0].pcolormesh(RAD, WL, MC_ex.transpose(), cmap='jet', clim=(-0.2, 0.2))
+plt.colorbar(plot00, ax=axs[0])
+axs[0].set_title(r'Expresión analítica')
+plot01=axs[1].pcolormesh(RAD, WL, MC.transpose(), cmap='jet', clim=(-0.2, 0.2))
+plt.colorbar(plot01, ax=axs[1])
+axs[1].set_title(r'Método matriz')
+plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MC.transpose()-MC_ex.transpose())/MC.max()), cmap='inferno')
+plt.colorbar(plot10, ax=axs[2])
+axs[2].set_title(r'Error relativo')
+
+
+for axi in axs.flat:
+    axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
+
+title = f"$Im(a_1b_1*)$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+
+fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig.suptitle(title)
+
+plot00=axs[0].pcolormesh(RAD, WL, MD_ex.transpose(), cmap='jet', clim=(-0.3, 0))
+plt.colorbar(plot00, ax=axs[0])
+axs[0].set_title(r'Expresión analítica')
+plot01=axs[1].pcolormesh(RAD, WL, MD.transpose(), cmap='jet', clim=(-0.3, 0))
+plt.colorbar(plot01, ax=axs[1])
+axs[1].set_title(r'Método matriz')
+plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MD.transpose()-MD_ex.transpose())/MD.max()), cmap='inferno')
+plt.colorbar(plot10, ax=axs[2])
+axs[2].set_title(r'Error relativo')
+
+
+for axi in axs.flat:
+    axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
+
+#%% Cortes en las gráficas
+
+rads_i = [45e-9, 55e-9, 65e-9, 75e-9, 85e-9]
+#rads_i = [75e-9]
+
+#%%
+plt.figure()
+plt.title("Cálculo matriz")
+for rad_i in rads_i:
+    irad = np.argmin(np.abs(radv-rad_i))
+    
+    # print(radv[irad])
+    
+    MA_corte = MA[irad,:]
+    MB_corte = MB[irad,:]
+    
+    Q_sca = (6*np.pi/(2*np.pi/wl_int)**2)*(MA_corte+MB_corte)
+    
+    plt.plot(wl_int, Q_sca, label=str(rad_i*2e9)+ " nm")
+    
+plt.xlabel("Wavelength")
+plt.ylabel(r"Q$_{sca}$")
+plt.legend()
+plt.show()
+
+plt.figure()
+plt.title("Expresiones analíticas")
+for rad_i in rads_i:
+    irad = np.argmin(np.abs(radv-rad_i))
+    
+    # print(radv[irad])
+    
+    MA_corte = MA_ex[irad,:]
+    MB_corte = MB_ex[irad,:]
+    
+    Q_sca = (6*np.pi/(2*np.pi/(n2*wl_int))**2)*(MA_corte+MB_corte)
+    
+    plt.plot(wl_int, Q_sca, label=str(rad_i*2e9)+" nm")
+
+plt.xlabel("Wavelength")
+plt.ylabel(r"Q$_{sca}$")
+plt.legend()
+plt.show()
+
+#%%
+
+plt.figure()
+plt.title("Cálculo todos ordenes")
+
+
+for rad_i in rads_i:
+    irad = np.argmin(np.abs(radv-rad_i))
+    
+    # print(radv[irad])
+    Q_sca=0
+    k0 = 2*np.pi/(wl_int*1e-6)          # número de onda
+    k=n2*k0
+    for j in range(1,11):
+        aj, bj = mie_coefs(j, n1_int, n2, k*rad_i)
+        Q_sca += (2*np.pi/k**2)*(2*j+1)*(np.abs(aj)**2+np.abs(bj)**2)
+#        plt.plot(wl_int, np.abs(aj)**2)
+#        plt.plot(wl_int, np.abs(bj)**2)
+    
+    plt.plot(wl_int, Q_sca, label=str(rad_i*2e9)+ " nm")
+    
+plt.xlabel("Wavelength")
+plt.ylabel(r"Q$_{sca}$")
+plt.legend()
+plt.show()
