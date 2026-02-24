@@ -285,7 +285,7 @@ z_imp = 376.86             # impedancia del medio
 E0 = 1.0                # amplitud del campo
 l_max = 3              # orden máximo del desarrollo
 
-theta_grados = 70
+theta_grados = 110
 phi_grados = 10
 
 theta = theta_grados*2*np.pi/360
@@ -353,7 +353,7 @@ for i, rad in enumerate(radv):
       
         
 
-#%% colormaps
+#%% colormaps separados por método
 
 RAD, WL = np.meshgrid(radv*1e9, wl_int)
 
@@ -420,13 +420,13 @@ axs[1, 1].set_title(r'Im(ab*)')
 for ax in axs.flat:
     ax.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-#%%
+#%% colormaps por componente
 
 RAD, WL = np.meshgrid(radv*1e9, wl_int)
-fs=(12,9)
-title = f"$|a_1|^2$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+fs=(16,12)
+title = f"$|a_1|^2$, $\\theta$ = {theta_grados}$^\\circ$, n$_2$={n2}, polarización circular"
 
-fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig, axs = plt.subplots(3, num=f"a,t={theta_grados},n2={n2}", figsize=fs)
 fig.suptitle(title)
 
 plot00=axs[0].pcolormesh(RAD, WL, MA_ex.transpose(), cmap='jet', clim=(0,1))
@@ -438,14 +438,15 @@ axs[1].set_title(r'Método matriz')
 plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MA.transpose()-MA_ex.transpose())/MA.max()), cmap='inferno')
 plt.colorbar(plot10, ax=axs[2])
 axs[2].set_title(r'Error relativo')
+plt.tight_layout(pad=3)
 
 
 for axi in axs.flat:
     axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-title = f"$|b_1|^2$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+title = f"$|b_1|^2$, $\\theta$ = {theta_grados}$^\\circ$, n$_2$={n2}, polarización circular"
 
-fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig, axs = plt.subplots(3, num=f"b,t={theta_grados},n2={n2}", figsize=fs)
 fig.suptitle(title)
 
 plot00=axs[0].pcolormesh(RAD, WL, MB_ex.transpose(), cmap='jet', clim=(0,1))
@@ -457,14 +458,14 @@ axs[1].set_title(r'Método matriz')
 plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MB.transpose()-MB_ex.transpose())/MB.max()), cmap='inferno')
 plt.colorbar(plot10, ax=axs[2])
 axs[2].set_title(r'Error relativo')
-
+plt.tight_layout(pad=3)
 
 for axi in axs.flat:
     axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-title = f"$Re(a_1b_1*)$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+title = f"$Re(a_1b_1*)$, $\\theta$ = {theta_grados}$^\\circ$, n$_2$={n2}, polarización circular"
 
-fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig, axs = plt.subplots(3, num=f"Re(ab*),t={theta_grados},n2={n2}", figsize=fs)
 fig.suptitle(title)
 
 plot00=axs[0].pcolormesh(RAD, WL, MC_ex.transpose(), cmap='jet', clim=(-0.2, 0.2))
@@ -476,14 +477,14 @@ axs[1].set_title(r'Método matriz')
 plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MC.transpose()-MC_ex.transpose())/MC.max()), cmap='inferno')
 plt.colorbar(plot10, ax=axs[2])
 axs[2].set_title(r'Error relativo')
-
+plt.tight_layout(pad=3)
 
 for axi in axs.flat:
     axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-title = f"$Im(a_1b_1*)$, $\\theta$ = {theta_grados}, n$_2$={n2}"
+title = f"$Im(a_1b_1*)$, $\\theta$ = {theta_grados}$^\\circ$, n$_2$={n2}, polarización circular"
 
-fig, axs = plt.subplots(3, num=title, figsize=fs)
+fig, axs = plt.subplots(3, num=f"Im(ab*),t={theta_grados},n2={n2}", figsize=fs)
 fig.suptitle(title)
 
 plot00=axs[0].pcolormesh(RAD, WL, MD_ex.transpose(), cmap='jet', clim=(-0.3, 0))
@@ -495,7 +496,7 @@ axs[1].set_title(r'Método matriz')
 plot10=axs[2].pcolormesh(RAD, WL, (np.abs(MD.transpose()-MD_ex.transpose())/MD.max()), cmap='inferno')
 plt.colorbar(plot10, ax=axs[2])
 axs[2].set_title(r'Error relativo')
-
+plt.tight_layout(pad=3)
 
 for axi in axs.flat:
     axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
