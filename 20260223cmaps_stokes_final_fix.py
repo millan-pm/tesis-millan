@@ -1,9 +1,9 @@
 """
 Created on Thu Jan 29 11:00:03 2026
 
-@author: milla
+@author: millan
 
-Calcula los campos E y H dispersados por una esfera de índice n2 y size parameter q=ka
+Calcula los componentes del cuadrivector D a partir de los parámetros de Stokes de un campo dispersadom por una esfera. Representa a distintos radios y longitudes de onda.
 """
 
 import numpy as np
@@ -244,13 +244,21 @@ def matriz_stokes_mie(l, wl, r, theta, phi, px, py):
     return M
 
 
-#%%
-data_n=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Si-n-AS.txt", delimiter=",")
-data_k=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Si-k-AS.txt", delimiter=",")
+#%% Vectores de índice de refracción y lonmgitud de onda.
+"""
+!!!-----------------------------------------------------------------------------------------------------------------!!!
+Reemplazar el path en data_n y data_k por el adecuado para los archivos .txt de la carpeta materiales en el repositorio
+!!!-----------------------------------------------------------------------------------------------------------------!!!
+"""
 
-wl_start = 0.45
-wl_end = 0.80
-nwl = 100
+data_n=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Si-n-AS.txt", delimiter=",") # Parte real del índice de refracción
+data_k=np.loadtxt("/Users/millanperez/Documents/wip/cmaps jorge/materiales/Si-k-AS.txt", delimiter=",") # Parte imaginaria del índice de refracción
+
+# Longitudes de onda EN MICRAS
+
+wl_start = 0.45    
+wl_end = 0.80      
+nwl = 100         
 
 wl_int = np.linspace(wl_start, wl_end, nwl)
 n1_int = np.interp(wl_int, data_n[:,0], data_n[:,1])+1j*np.interp(wl_int, data_k[:,0], data_k[:,1]) #Con pérdidas
@@ -258,8 +266,27 @@ n1_int = np.interp(wl_int, data_n[:,0], data_n[:,1])+1j*np.interp(wl_int, data_k
 
 
 
-#%%
-nrad= 200
+#%% Inicialización de variables
+# px, py componentes del vector de Jones 
+
+px = 1
+py = 0
+
+n2 = 1.33                                 # índice de refracción del medio externo
+nrad= 200                                 # número de puntos vector de radios de la partícula
+rad_start = 50e-9                         # menor radio del vector (en METROS)
+rad_end = 100e-9                          # mayor radio del vector (en METROS)
+radv = np.linspace(rad_start, rad_end, nrad)
+z_imp = 376.86                            # impedancia del vacío
+E0 = 1.0                                  # amplitud del campo incidente
+l_max = 3                                 # orden máximo del desarrollo (l_max = 3 suficiente en la mayoría de casos)
+
+theta_grados = 130                        # ángulo de observación theta (en grados)
+phi_grados = 10                           # ángulo de observación phi (en grados)
+
+theta = theta_grados*2*np.pi/360
+phi = phi_grados*2*np.pi/360
+r = 10                                    # distancia entre esfera y punto de observación (en METROS)
 
 MA = np.zeros((nrad, nwl))
 MB = np.zeros((nrad, nwl))
@@ -272,33 +299,14 @@ MB_ex = np.zeros((nrad, nwl))
 MC_ex = np.zeros((nrad, nwl))
 MD_ex = np.zeros((nrad, nwl))
 
-
-
-
-px = 1
-py = 0
-
-n2 = 1.33
-
-radv = np.linspace(50e-9, 100e-9, nrad)
-z_imp = 376.86             # impedancia del medio
-E0 = 1.0                # amplitud del campo
-l_max = 3              # orden máximo del desarrollo
-
-theta_grados = 130
-phi_grados = 10
-
-theta = theta_grados*2*np.pi/360
-phi = phi_grados*2*np.pi/360
-r = 10
-
+#%% Bucle de cálculo principal, muestra un mensaje por pantalla cada 10 iteraciones del bucle exterior (bucle en radios)
 
 for i, rad in enumerate(radv):
     if i % 10 == 0: print(f"Procesando i={i}")
     for j, wl in enumerate(wl_int):
         n1 = n1_int[j]
         wl = wl*1e-6
-        k0 = 2*np.pi/wl          # número de onda
+        k0 = 2*np.pi/wl
         k=n2*k0
         
         Er     = 0j
@@ -354,7 +362,7 @@ for i, rad in enumerate(radv):
       
         
 
-#%% colormaps separados por método
+#%% Colormaps separados por método
 
 RAD, WL = np.meshgrid(radv*1e9, wl_int)
 
@@ -421,7 +429,7 @@ axs[1, 1].set_title(r'Im(ab*)')
 for ax in axs.flat:
     ax.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-#%% colormaps por componente
+#%% Colormaps separados por componente
 
 RAD, WL = np.meshgrid(radv*1e9, wl_int)
 fs=(16,12)
@@ -502,7 +510,7 @@ plt.tight_layout(pad=3)
 for axi in axs.flat:
     axi.set(xlabel=r'Sphere radius ($n m$)', ylabel=r'Wavelength ($\mu m$)')
 
-#%%
+#%% Almacenamiento de las matrices en texto (modificar nombres si hace falta)
 
 np.savetxt("MA_lineal130.txt", MA)
 np.savetxt("MB_lineal130.txt", MB)
@@ -514,7 +522,7 @@ np.savetxt("MC_ex_lineal130.txt", MC_ex)
 np.savetxt("MD_ex_lineal130.txt", MD_ex)
 
 
-#%% Cortes en las gráficas
+#%% Cortes en las gráficas (USAR READ.py)
 
 #rads_i = [45e-9, 55e-9, 65e-9, 75e-9, 85e-9]
 rads_i = [80e-9]
@@ -590,4 +598,5 @@ for rad_i in rads_i:
 plt.xlabel("Wavelength")
 plt.ylabel(r"Q$_{sca}$")
 plt.legend()
+
 plt.show()
